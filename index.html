@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Windows 365 for Agents — Regional Revenue Calculator</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #eef3f8;
+  --cp-bg-elevated: #f7fafd;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f1f5f9;
+  --cp-border: #d4dee8;
+  --cp-border-strong: #8aa0b5;
+  --cp-text: #16222e;
+  --cp-text-muted: #51606e;
+  --cp-text-soft: #687786;
+  --cp-accent: #0078d4;
+  --cp-accent-hover: #106ebe;
+  --cp-accent-soft: rgba(0, 120, 212, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 60, 120, 0.12);
+  --cp-highlight: rgba(0, 120, 212, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #1b2733;
+  --cp-bg-elevated: #16212c;
+  --cp-surface: #20303d;
+  --cp-surface-soft: #25364457;
+  --cp-border: #34485a;
+  --cp-border-strong: #4a6378;
+  --cp-text: #e3edf6;
+  --cp-text-muted: #93a6b8;
+  --cp-text-soft: #aebccb;
+  --cp-accent: #4da6ff;
+  --cp-accent-hover: #3a96f0;
+  --cp-accent-soft: rgba(77, 166, 255, 0.14);
+  --cp-accent-fg: #0a1620;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-highlight: rgba(77, 166, 255, 0.12);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  line-height: 1.45;
+}
+.wrap { max-width: 1240px; margin: 0 auto; padding: 28px 20px 60px; }
+header.app { margin-bottom: 22px; }
+header.app h1 { font-size: 1.55rem; margin: 0 0 4px; }
+header.app p { margin: 0; color: var(--cp-text-muted); font-size: 0.92rem; max-width: 860px; }
+.topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+button.btn {
+  font-family: inherit; font-size: 0.85rem; cursor: pointer;
+  border: 1px solid var(--cp-border); background: var(--cp-surface); color: var(--cp-text);
+  padding: 7px 12px; border-radius: 0.625rem; transition: all .15s;
+}
+button.btn:hover { border-color: var(--cp-border-strong); }
+button.btn.accent { background: var(--cp-accent); color: var(--cp-accent-fg); border-color: var(--cp-accent); }
+button.btn.accent:hover { background: var(--cp-accent-hover); }
+button.btn.active { background: var(--cp-accent-soft); border-color: var(--cp-accent); color: var(--cp-accent); }
+
+.grid { display: grid; grid-template-columns: 372px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 940px){ .grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--cp-surface); border: 1px solid var(--cp-border);
+  border-radius: 16px; padding: 18px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+.card h2 { font-size: 1rem; margin: 0 0 14px; }
+.card h3 { font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; color: var(--cp-accent); margin: 22px 0 12px; padding-top: 16px; border-top: 1px solid var(--cp-border); }
+.card h3:first-of-type { margin-top: 6px; padding-top: 0; border-top: none; }
+
+.field { margin-bottom: 14px; }
+.field label { display: flex; justify-content: space-between; align-items: baseline; font-size: .85rem; margin-bottom: 5px; }
+.field label .val { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--cp-accent); }
+.field .row { display: flex; gap: 8px; align-items: center; }
+input[type="range"] { flex: 1; accent-color: var(--cp-accent); }
+input[type="number"], select {
+  font-family: inherit; font-size: .85rem; width: 92px; text-align: right;
+  padding: 5px 8px; border: 1px solid var(--cp-border); border-radius: 8px;
+  background: var(--cp-bg-elevated); color: var(--cp-text);
+}
+select { width: 100%; text-align: left; }
+.field .hint { font-size: .73rem; color: var(--cp-text-muted); margin-top: 3px; }
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: .85rem; margin-bottom: 12px; }
+.toggle-row input { accent-color: var(--cp-accent); width: 16px; height: 16px; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+@media (max-width: 760px){ .kpis { grid-template-columns: repeat(2,1fr); } }
+.kpi {
+  background: var(--cp-bg-elevated); border: 1px solid var(--cp-border);
+  border-radius: 12px; padding: 13px 14px;
+}
+.kpi .lbl { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--cp-text-soft); }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 3px; }
+.kpi .sub { font-size: .73rem; color: var(--cp-text-muted); margin-top: 2px; }
+.kpi.hero { background: var(--cp-accent-soft); border-color: var(--cp-accent); }
+.kpi.hero .num { color: var(--cp-accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--cp-border); font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--cp-text-soft); font-weight: 600; font-size: .76rem; text-transform: uppercase; letter-spacing:.03em; }
+tbody tr:last-child td { border-bottom: none; }
+tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
+.scen-base { color: var(--cp-accent); font-weight: 700; }
+
+.chartbox { margin-top: 6px; }
+.bars { display: flex; align-items: flex-end; gap: 4px; height: 150px; padding-top: 8px; }
+.bar { flex: 1; background: var(--cp-accent); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; opacity:.85; }
+.bar:hover { opacity: 1; }
+.axis { display: flex; justify-content: space-between; font-size: .7rem; color: var(--cp-text-muted); margin-top: 8px; }
+
+.note { font-size: .76rem; color: var(--cp-text-muted); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--cp-border); }
+.pill { display:inline-block; font-size:.7rem; padding:2px 8px; border-radius:999px; background:var(--cp-accent-soft); color:var(--cp-accent); border:1px solid var(--cp-accent); margin-left:6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div class="topbar">
+      <div>
+        <h1>Windows 365 for Agents — Regional Revenue Calculator <span class="pill" id="pricePill">EU/UK · $0.52/hr</span></h1>
+        <p>Model expected consumption revenue for a region based on customers, agents/Cloud PCs, employees and their ratio. Pricing is <b>per Cloud PC (VM)</b>, not per user. Two types: <b>On-demand</b> (PAYG hours only) and <b>Always-available</b> (fixed price/Cloud PC/month + PAYG hours). Prices follow the official FAQ per geography.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="presetCons">Conservative</button>
+        <button class="btn active" id="presetBase">Base</button>
+        <button class="btn" id="presetAmb">Aggressive</button>
+        <button class="btn" id="themeToggle" title="Light/dark">◐</button>
+        <button class="btn accent" id="copyBtn">Copy summary</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- INPUTS -->
+    <div class="card" id="inputs">
+      <h2>Assumptions</h2>
+
+      <h3>Region &amp; price (FAQ)</h3>
+      <div class="field">
+        <select id="regionSel"></select>
+        <div class="hint" id="regionHint"></div>
+      </div>
+      <div class="field">
+        <label>PAYG price per Cloud PC-hour <span class="val">$<span id="vHourly">0.52</span></span></label>
+        <div class="row"><input type="range" id="rHourly" min="0.05" max="1.5" step="0.001" value="0.52"><input type="number" id="nHourly" value="0.52" step="0.001"></div>
+      </div>
+      <div class="field">
+        <label>Always-available fixed fee /Cloud PC/month <span class="val">$<span id="vAaMonthly">6.50</span></span></label>
+        <div class="row"><input type="range" id="rAaMonthly" min="0" max="20" step="0.25" value="6.5"><input type="number" id="nAaMonthly" value="6.5" step="0.25"></div>
+      </div>
+
+      <h3>Market &amp; customers</h3>
+      <div class="field">
+        <label>Customers in region <span class="val" id="vCustomers">50</span></label>
+        <div class="row"><input type="range" id="rCustomers" min="1" max="500" step="1" value="50"><input type="number" id="nCustomers" value="50"></div>
+      </div>
+      <div class="field">
+        <label>Avg. employees (users) per customer <span class="val" id="vUsers">2,000</span></label>
+        <div class="row"><input type="range" id="rUsers" min="50" max="50000" step="50" value="2000"><input type="number" id="nUsers" value="2000"></div>
+      </div>
+      <div class="field">
+        <label>Customers adopting W365A <span class="val" id="vCustAdopt">40%</span></label>
+        <div class="row"><input type="range" id="rCustAdopt" min="1" max="100" step="1" value="40"><input type="number" id="nCustAdopt" value="40"></div>
+        <div class="hint">Share of regional customers that actually deploy W365 for Agents. Scales the active base and trial credit.</div>
+      </div>
+
+      <h3>Agent ↔ user ratio</h3>
+      <div class="field">
+        <label>Agents (Cloud PCs) per 100 employees <span class="val" id="vRatio">5</span></label>
+        <div class="row"><input type="range" id="rRatio" min="0.5" max="50" step="0.5" value="5"><input type="number" id="nRatio" value="5" step="0.5"></div>
+        <div class="hint">Sizes the agent fleet. 5 = 1 agent Cloud PC per 20 employees.</div>
+      </div>
+
+      <h3>Fleet mix</h3>
+      <div class="field">
+        <label>Share Always-available <span class="val" id="vAaPct">25%</span></label>
+        <div class="row"><input type="range" id="rAaPct" min="0" max="100" step="5" value="25"><input type="number" id="nAaPct" value="25"></div>
+        <div class="hint">Remainder is On-demand (PAYG only). Always-available also incurs hourly usage + the fixed monthly fee.</div>
+      </div>
+
+      <h3>Usage per agent</h3>
+      <div class="field">
+        <label>Active hours per agent per workday <span class="val" id="vHours">8</span></label>
+        <div class="row"><input type="range" id="rHours" min="0.5" max="24" step="0.5" value="8"><input type="number" id="nHours" value="8" step="0.5"></div>
+      </div>
+      <div class="field">
+        <label>Workdays per month <span class="val" id="vDays">22</span></label>
+        <div class="row"><input type="range" id="rDays" min="1" max="31" step="1" value="22"><input type="number" id="nDays" value="22"></div>
+      </div>
+      <div class="field">
+        <label>Utilization <span class="val" id="vUtil">70%</span></label>
+        <div class="row"><input type="range" id="rUtil" min="5" max="100" step="5" value="70"><input type="number" id="nUtil" value="70"></div>
+        <div class="hint">Share of scheduled hours an agent actually runs.</div>
+      </div>
+
+      <h3>Adoption &amp; trial</h3>
+      <div class="field">
+        <label>Adoption at end of year 1 <span class="val" id="vAdopt">100%</span></label>
+        <div class="row"><input type="range" id="rAdopt" min="5" max="100" step="5" value="100"><input type="number" id="nAdopt" value="100"></div>
+        <div class="hint">Linear ramp from 0 → this % over 12 months (year-1 figure).</div>
+      </div>
+      <div class="toggle-row"><input type="checkbox" id="incTrial" checked><label for="incTrial">Deduct 50 free trial hours per tenant (year 1)</label></div>
+
+      <h3>Currency reference</h3>
+      <div class="field">
+        <div class="row">
+          <span class="hint" style="margin:0">Also show in EUR · 1 USD =</span>
+          <input type="number" id="fx" value="0.92" step="0.01" style="width:70px">
+        </div>
+        <div class="hint">FAQ prices are in USD. EUR is a conversion reference only.</div>
+      </div>
+
+      <div class="note" id="resetNote">
+        <button class="btn" id="resetBtn" style="width:100%">↺ Reset to defaults</button>
+      </div>
+    </div>
+
+    <!-- OUTPUTS -->
+    <div>
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">Total agents / Cloud PCs</div><div class="num" id="kAgents">—</div><div class="sub" id="kAgentsSub"></div></div>
+        <div class="kpi"><div class="lbl">Cloud PC-hours / month</div><div class="num" id="kHours">—</div><div class="sub">at full adoption</div></div>
+        <div class="kpi hero"><div class="lbl">Agent revenue / year</div><div class="num" id="kAgentRev">—</div><div class="sub">run-rate, full adoption</div></div>
+        <div class="kpi"><div class="lbl">Total revenue / year</div><div class="num" id="kTotal">—</div><div class="sub" id="kTotalSub">run-rate</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h2>Revenue breakdown <span style="font-weight:400;font-size:.8rem;color:var(--cp-text-muted)">(monthly &amp; annual run-rate at full adoption)</span></h2>
+        <table id="breakdown">
+          <thead><tr><th>Component</th><th>Volume</th><th>Per month</th><th>Per year</th></tr></thead>
+          <tbody id="bdBody"></tbody>
+        </table>
+        <div class="note" id="perCust"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h2>Scenario comparison</h2>
+        <table id="scenarios">
+          <thead><tr><th>Scenario</th><th>Agents/100</th><th>Utilization</th><th>Cloud PCs</th><th>Agent rev/year</th><th>Total/year</th></tr></thead>
+          <tbody id="scenBody"></tbody>
+        </table>
+        <div class="note">Conservative = ½ agent ratio &amp; 45% utilization · Base = your current settings · Aggressive = 2× agent ratio &amp; 100% utilization. Region price and fleet mix stay the same.</div>
+      </div>
+
+      <div class="card">
+        <h2>Year 1 — monthly revenue with adoption ramp</h2>
+        <div class="chartbox">
+          <div class="bars" id="bars"></div>
+          <div class="axis"><span>M1</span><span>M6</span><span>M12</span></div>
+        </div>
+        <div class="kpis" style="margin-top:22px;margin-bottom:0">
+          <div class="kpi"><div class="lbl">Year 1 (with ramp)</div><div class="num" id="kY1">—</div><div class="sub" id="kY1sub">billed in year 1</div></div>
+          <div class="kpi"><div class="lbl">Exit run-rate</div><div class="num" id="kExit">—</div><div class="sub">month 12 × 12</div></div>
+          <div class="kpi"><div class="lbl">Per customer / year</div><div class="num" id="kPerCust">—</div><div class="sub">per active customer</div></div>
+          <div class="kpi"><div class="lbl">Per Cloud PC / month</div><div class="num" id="kPerAgent">—</div><div class="sub">avg all-in</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const REGIONS = {
+  "US (East / West / Central)": {hr:0.40, mo:5},
+  "Central America": {hr:0.44, mo:5.5},
+  "Canada": {hr:0.48, mo:6},
+  "Europe / United Kingdom": {hr:0.52, mo:6.5},
+  "Asia / India": {hr:0.56, mo:7},
+  "Middle East / France / UAE / Switzerland": {hr:0.572, mo:7.15},
+  "Australia / Australasia": {hr:0.58, mo:7.25},
+  "South Africa": {hr:0.584, mo:7.3},
+  "South America": {hr:0.80, mo:10},
+};
+const REGION_SHORT = {
+  "US (East / West / Central)":"US","Central America":"C-Am","Canada":"CA",
+  "Europe / United Kingdom":"EU/UK","Asia / India":"Asia/IN",
+  "Middle East / France / UAE / Switzerland":"ME/FR","Australia / Australasia":"AU",
+  "South Africa":"ZA","South America":"S-Am"
+};
+const LOC = "en-US";
+const TRIAL_HOURS = 50;
+
+const DEFAULTS = {
+  region:"Europe / United Kingdom", hourly:0.52, aaMonthly:6.5,
+  customers:50, users:2000, custAdopt:40, ratio:5, aaPct:25, hours:8, days:22, util:70,
+  adopt:100, incTrial:true, fx:0.92
+};
+const ids = ["hourly","aaMonthly","customers","users","custAdopt","ratio","aaPct","hours","days","util","adopt"];
+const state = {...DEFAULTS};
+
+function fmtInt(n){ return Math.round(n).toLocaleString(LOC); }
+function fmtMoney(n){
+  let v=n, suffix="";
+  if (Math.abs(n)>=1e9){ v=n/1e9; suffix="B"; }
+  else if (Math.abs(n)>=1e6){ v=n/1e6; suffix="M"; }
+  else if (Math.abs(n)>=1e3){ v=n/1e3; suffix="k"; }
+  const dec = suffix? 2:0;
+  return "$"+v.toLocaleString(LOC,{minimumFractionDigits:dec,maximumFractionDigits:dec})+suffix;
+}
+function fmtFull(n){ return "$"+Math.round(n).toLocaleString(LOC); }
+
+function compute(s){
+  const activeCust = s.customers * (s.custAdopt/100);
+  const agentsPerCust = s.users * (s.ratio/100);
+  const agents = activeCust * agentsPerCust;
+  const aaVMs = agents * (s.aaPct/100);
+  const odVMs = agents - aaVMs;
+  const hoursPerAgentMonth = s.hours * s.days * (s.util/100);
+  const cpHoursMonth = agents * hoursPerAgentMonth;
+
+  const hourlyRevMonth = cpHoursMonth * s.hourly;
+  const aaFixedMonth   = aaVMs * s.aaMonthly;
+  const agentRevMonth  = hourlyRevMonth + aaFixedMonth;
+  const agentRevYear   = agentRevMonth * 12;
+
+  const seats = 0;
+  const seatRevMonth = 0;
+  const seatRevYear  = 0;
+
+  const totalMonth = agentRevMonth;
+  const totalYear  = agentRevYear;
+
+  let y1Agent=0; const monthly=[];
+  for (let m=1;m<=12;m++){
+    const frac = (s.adopt/100)*(m/12);
+    monthly.push(agentRevMonth*frac);
+    y1Agent += agentRevMonth*frac;
+  }
+  let y1 = monthly.reduce((a,b)=>a+b,0);
+  const trialCredit = s.incTrial ? activeCust*TRIAL_HOURS*s.hourly : 0;
+  const y1Net = Math.max(0, y1 - trialCredit);
+  const exit = monthly[11]*12;
+
+  return {activeCust,agentsPerCust,agents,aaVMs,odVMs,hoursPerAgentMonth,cpHoursMonth,
+    hourlyRevMonth,aaFixedMonth,agentRevMonth,agentRevYear,
+    seats,seatRevMonth,seatRevYear,totalMonth,totalYear,
+    monthly,y1,y1Net,trialCredit,exit};
+}
+
+function render(){
+  document.getElementById("vHourly").textContent = state.hourly.toLocaleString(LOC,{minimumFractionDigits:2,maximumFractionDigits:3});
+  document.getElementById("vAaMonthly").textContent = state.aaMonthly.toLocaleString(LOC,{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById("vCustomers").textContent = fmtInt(state.customers);
+  document.getElementById("vUsers").textContent = fmtInt(state.users);
+  document.getElementById("vCustAdopt").textContent = state.custAdopt+"%";
+  document.getElementById("vRatio").textContent = state.ratio;
+  document.getElementById("vAaPct").textContent = state.aaPct+"%";
+  document.getElementById("vHours").textContent = state.hours;
+  document.getElementById("vDays").textContent = state.days;
+  document.getElementById("vUtil").textContent = state.util+"%";
+  document.getElementById("vAdopt").textContent = state.adopt+"%";
+  document.getElementById("pricePill").textContent = REGION_SHORT[state.region]+" · $"+state.hourly.toLocaleString(LOC,{minimumFractionDigits:2,maximumFractionDigits:3})+"/hr";
+  document.getElementById("regionHint").textContent = "FAQ: $"+REGIONS[state.region].hr+"/VM/hr · $"+REGIONS[state.region].mo+"/VM/month (always-available).";
+
+  const r = compute(state);
+
+  document.getElementById("kAgents").textContent = fmtInt(r.agents);
+  document.getElementById("kAgentsSub").textContent = fmtInt(r.activeCust)+" active customers · "+fmtInt(r.aaVMs)+" AA / "+fmtInt(r.odVMs)+" OD";
+  document.getElementById("kHours").textContent = fmtInt(r.cpHoursMonth);
+  document.getElementById("kAgentRev").textContent = fmtMoney(r.agentRevYear);
+  document.getElementById("kTotal").textContent = fmtMoney(r.totalYear);
+  document.getElementById("kTotalSub").textContent = "agents only";
+
+  let rows = [];
+  rows.push(["Hourly consumption (PAYG, all Cloud PCs)", fmtInt(r.cpHoursMonth)+" hrs/mo", fmtFull(r.hourlyRevMonth), fmtFull(r.hourlyRevMonth*12)]);
+  if (state.aaPct>0)
+    rows.push(["Always-available fixed fee", fmtInt(r.aaVMs)+" Cloud PCs", fmtFull(r.aaFixedMonth), fmtFull(r.aaFixedMonth*12)]);
+  let body = rows.map(c=>`<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3]}</td></tr>`).join("");
+  body += `<tr class="total"><td>Total</td><td>—</td><td>${fmtFull(r.totalMonth)}</td><td>${fmtFull(r.totalYear)}</td></tr>`;
+  document.getElementById("bdBody").innerHTML = body;
+
+  const eur = "€"+Math.round(r.totalYear*state.fx).toLocaleString(LOC);
+  document.getElementById("perCust").textContent =
+    `≈ ${eur} per year (FX ${state.fx}). ${fmtInt(r.activeCust)} of ${fmtInt(state.customers)} customers adopting (${state.custAdopt}%) · ${fmtInt(r.agents)} Cloud PCs (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand) · avg. ${fmtInt(r.hoursPerAgentMonth)} hrs/Cloud PC/month.`;
+
+  const scen = [
+    {name:"Conservative", ratio:state.ratio*0.5, util:45, base:false},
+    {name:"Base", ratio:state.ratio, util:state.util, base:true},
+    {name:"Aggressive", ratio:state.ratio*2, util:100, base:false},
+  ];
+  document.getElementById("scenBody").innerHTML = scen.map(sc=>{
+    const sr = compute({...state, ratio:sc.ratio, util:sc.util});
+    const cls = sc.base?' class="scen-base"':'';
+    return `<tr><td${cls}>${sc.name}</td><td>${sc.ratio.toLocaleString(LOC,{maximumFractionDigits:1})}</td><td>${sc.util}%</td><td>${fmtInt(sr.agents)}</td><td${cls}>${fmtMoney(sr.agentRevYear)}</td><td${cls}>${fmtMoney(sr.totalYear)}</td></tr>`;
+  }).join("");
+
+  const maxM = Math.max(...r.monthly,1);
+  document.getElementById("bars").innerHTML = r.monthly.map((mv,i)=>{
+    const h = Math.max(2,(mv/maxM)*150);
+    return `<div class="bar" style="height:${h}px" title="M${i+1}: ${fmtFull(mv)}"></div>`;
+  }).join("");
+
+  document.getElementById("kY1").textContent = fmtMoney(r.y1Net);
+  document.getElementById("kY1sub").textContent = state.incTrial ? `after −${fmtFull(r.trialCredit)} trial` : "billed in year 1";
+  document.getElementById("kExit").textContent = fmtMoney(r.exit);
+  document.getElementById("kPerCust").textContent = fmtMoney(r.totalYear/Math.max(1,r.activeCust));
+  document.getElementById("kPerAgent").textContent = fmtFull(r.agents>0 ? r.totalMonth/r.agents : 0);
+}
+
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+const regionSel = document.getElementById("regionSel");
+Object.keys(REGIONS).forEach(k=>{
+  const o=document.createElement("option"); o.value=k; o.textContent=k;
+  if(k===DEFAULTS.region) o.selected=true; regionSel.appendChild(o);
+});
+regionSel.addEventListener("change", e=>{
+  state.region=e.target.value;
+  const p=REGIONS[state.region];
+  setVals({hourly:p.hr, aaMonthly:p.mo});
+});
+
+ids.forEach(key=>{
+  const r=document.getElementById("r"+cap(key));
+  const n=document.getElementById("n"+cap(key));
+  const sync=(src)=>{ let v=parseFloat(src.value); if(isNaN(v))return; state[key]=v; r.value=v; n.value=v; render(); };
+  r.addEventListener("input",()=>sync(r));
+  n.addEventListener("input",()=>sync(n));
+});
+
+document.getElementById("incTrial").addEventListener("change",e=>{state.incTrial=e.target.checked;render();});
+document.getElementById("fx").addEventListener("input",e=>{const v=parseFloat(e.target.value); if(!isNaN(v)){state.fx=v;render();}});
+
+function setVals(obj){
+  Object.entries(obj).forEach(([k,v])=>{
+    state[k]=v;
+    const r=document.getElementById("r"+cap(k)); const n=document.getElementById("n"+cap(k));
+    if(r) r.value=v; if(n) n.value=v;
+  });
+  render();
+}
+function applyPreset(p){
+  document.querySelectorAll("#presetCons,#presetBase,#presetAmb").forEach(b=>b.classList.remove("active"));
+  if(p==="cons"){ setVals({ratio:2,util:45,aaPct:10,adopt:60}); document.getElementById("presetCons").classList.add("active"); }
+  else if(p==="amb"){ setVals({ratio:10,util:100,aaPct:40,adopt:100}); document.getElementById("presetAmb").classList.add("active"); }
+  else { setVals({ratio:5,util:70,aaPct:25,adopt:100}); document.getElementById("presetBase").classList.add("active"); }
+}
+document.getElementById("presetCons").addEventListener("click",()=>applyPreset("cons"));
+document.getElementById("presetBase").addEventListener("click",()=>applyPreset("base"));
+document.getElementById("presetAmb").addEventListener("click",()=>applyPreset("amb"));
+
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  Object.assign(state, DEFAULTS);
+  regionSel.value=DEFAULTS.region;
+  ids.forEach(k=>{ const r=document.getElementById("r"+cap(k)); const n=document.getElementById("n"+cap(k)); r.value=state[k]; n.value=state[k]; });
+  document.getElementById("incTrial").checked=DEFAULTS.incTrial;
+  document.getElementById("fx").value=DEFAULTS.fx;
+  applyPreset("base");
+});
+
+document.getElementById("themeToggle").addEventListener("click",()=>{
+  const cur=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme", cur==="dark"?"light":"dark");
+});
+
+document.getElementById("copyBtn").addEventListener("click",()=>{
+  const r=compute(state);
+  const txt =
+`Windows 365 for Agents — regional revenue estimate (${state.region})
+Price (FAQ): $${state.hourly}/Cloud PC/hr · $${state.aaMonthly}/Cloud PC/month (always-available)
+Assumptions: ${fmtInt(state.customers)} customers · ${state.custAdopt}% adopting (${fmtInt(r.activeCust)} active) · ${fmtInt(state.users)} employees/customer · ${state.ratio} agents/100 emp. · ${state.aaPct}% always-available · ${state.hours}h/day × ${state.days} days × ${state.util}% util
+Cloud PCs: ${fmtInt(r.agents)} (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand)
+Cloud PC-hours/month: ${fmtInt(r.cpHoursMonth)}
+Hourly consumption/year: ${fmtFull(r.hourlyRevMonth*12)}
+Always-available fixed fee/year: ${fmtFull(r.aaFixedMonth*12)}
+Agent revenue/year (run-rate): ${fmtFull(r.agentRevYear)}
+Total revenue/year (run-rate): ${fmtFull(r.totalYear)}
+Year 1 with ramp${state.incTrial?` (after −${fmtFull(r.trialCredit)} trial)`:""}: ${fmtFull(r.y1Net)}
+Per customer/year: ${fmtFull(r.totalYear/Math.max(1,state.customers))}`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b=document.getElementById("copyBtn"); const o=b.textContent; b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1500);
+  });
+});
+
+render();
+</script>
+</body>
+</html>
