@@ -188,7 +188,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       <div class="field">
         <label>Customers adopting W365A <span class="val" id="vCustAdopt">40%</span></label>
         <div class="row"><input type="range" id="rCustAdopt" min="1" max="100" step="1" value="40"><input type="number" id="nCustAdopt" value="40"></div>
-        <div class="hint">Share of regional customers that actually deploy W365 for Agents. Scales the active base and trial credit.</div>
+        <div class="hint">Share of regional customers that actually deploy W365 for Agents. Scales the active base.</div>
       </div>
 
       <h3>Fleet mix</h3>
@@ -213,13 +213,12 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
         <div class="hint">Share of scheduled hours an agent actually runs.</div>
       </div>
 
-      <h3>Adoption &amp; trial</h3>
+      <h3>Adoption</h3>
       <div class="field">
         <label>Adoption at end of year 1 <span class="val" id="vAdopt">100%</span></label>
         <div class="row"><input type="range" id="rAdopt" min="5" max="100" step="5" value="100"><input type="number" id="nAdopt" value="100"></div>
         <div class="hint">Linear ramp from 0 → this % over 12 months (year-1 figure).</div>
       </div>
-      <div class="toggle-row"><input type="checkbox" id="incTrial" checked><label for="incTrial">Deduct 50 free trial hours per tenant (year 1)</label></div>
 
       <h3>Currency reference</h3>
       <div class="field">
@@ -298,12 +297,12 @@ const REGION_SHORT = {
   "South Africa":"ZA","South America":"S-Am"
 };
 const LOC = "en-US";
-const TRIAL_HOURS = 50;
+
 
 const DEFAULTS = {
   region:"Europe / United Kingdom", hourly:0.52, aaMonthly:6.5,
   customers:50, agentsPer:100, custAdopt:40, aaPct:25, hours:8, days:22, util:70,
-  adopt:100, incTrial:true, fx:0.92
+  adopt:100, fx:0.92
 };
 const ids = ["hourly","aaMonthly","customers","agentsPer","custAdopt","aaPct","hours","days","util","adopt"];
 const state = {...DEFAULTS};
@@ -347,14 +346,13 @@ function compute(s){
     y1Agent += agentRevMonth*frac;
   }
   let y1 = monthly.reduce((a,b)=>a+b,0);
-  const trialCredit = s.incTrial ? activeCust*TRIAL_HOURS*s.hourly : 0;
-  const y1Net = Math.max(0, y1 - trialCredit);
+  const y1Net = y1;
   const exit = monthly[11]*12;
 
   return {activeCust,agentsPerCust,agents,aaVMs,odVMs,hoursPerAgentMonth,cpHoursMonth,
     hourlyRevMonth,aaFixedMonth,agentRevMonth,agentRevYear,
     seats,seatRevMonth,seatRevYear,totalMonth,totalYear,
-    monthly,y1,y1Net,trialCredit,exit};
+    monthly,y1,y1Net,exit};
 }
 
 function render(){
@@ -410,7 +408,7 @@ function render(){
   }).join("");
 
   document.getElementById("kY1").textContent = fmtMoney(r.y1Net);
-  document.getElementById("kY1sub").textContent = state.incTrial ? `after −${fmtFull(r.trialCredit)} trial` : "billed in year 1";
+  document.getElementById("kY1sub").textContent = "billed in year 1";
   document.getElementById("kExit").textContent = fmtMoney(r.exit);
   document.getElementById("kPerCust").textContent = fmtMoney(r.totalYear/Math.max(1,r.activeCust));
   document.getElementById("kPerAgent").textContent = fmtFull(r.agents>0 ? r.totalMonth/r.agents : 0);
@@ -437,7 +435,6 @@ ids.forEach(key=>{
   n.addEventListener("input",()=>sync(n));
 });
 
-document.getElementById("incTrial").addEventListener("change",e=>{state.incTrial=e.target.checked;render();});
 document.getElementById("fx").addEventListener("input",e=>{const v=parseFloat(e.target.value); if(!isNaN(v)){state.fx=v;render();}});
 
 function setVals(obj){
@@ -462,7 +459,6 @@ document.getElementById("resetBtn").addEventListener("click",()=>{
   Object.assign(state, DEFAULTS);
   regionSel.value=DEFAULTS.region;
   ids.forEach(k=>{ const r=document.getElementById("r"+cap(k)); const n=document.getElementById("n"+cap(k)); r.value=state[k]; n.value=state[k]; });
-  document.getElementById("incTrial").checked=DEFAULTS.incTrial;
   document.getElementById("fx").value=DEFAULTS.fx;
   applyPreset("base");
 });
@@ -484,7 +480,7 @@ Hourly consumption/year: ${fmtFull(r.hourlyRevMonth*12)}
 Always-available fixed fee/year: ${fmtFull(r.aaFixedMonth*12)}
 Agent revenue/year (run-rate): ${fmtFull(r.agentRevYear)}
 Total revenue/year (run-rate): ${fmtFull(r.totalYear)}
-Year 1 with ramp${state.incTrial?` (after −${fmtFull(r.trialCredit)} trial)`:""}: ${fmtFull(r.y1Net)}
+Year 1 with ramp: ${fmtFull(r.y1Net)}
 Per customer/year: ${fmtFull(r.totalYear/Math.max(1,state.customers))}`;
   navigator.clipboard.writeText(txt).then(()=>{
     const b=document.getElementById("copyBtn"); const o=b.textContent; b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1500);
