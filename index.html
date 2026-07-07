@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Computer Use Agent (CUA) — Regional Revenue Calculator</title>
+<title>Computer Use Agent (CUA) — Cost Estimator</title>
 <script>
   (() => {
     const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
@@ -143,8 +143,8 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
   <header class="app">
     <div class="topbar">
       <div>
-        <h1>Computer Use Agent (CUA) — Regional Revenue Calculator <span class="pill" id="pricePill">EU/UK · $0.52/hr</span></h1>
-        <p><b>Scope:</b> models <b>consumption revenue for Computer Use Agents (CUA)</b> running on Cloud PCs — i.e. the Copilot Studio / CUA scenario using Cloud PC hourly pricing per the public FAQ. It is <b>not</b> a model for the <b>Windows 365 for Agents (A365-based)</b> SKU, which has a different licensing and cost structure. If you're sizing that, use the internal Copilot Credit Tools instead.</p>
+        <h1>Computer Use Agent (CUA) — Cost Estimator <span class="pill" id="pricePill">EU/UK · $0.52/hr</span></h1>
+        <p><b>Scope:</b> estimates <b>consumption cost for Computer Use Agents (CUA)</b> running on Cloud PCs — i.e. the Copilot Studio / CUA scenario using Cloud PC hourly pricing per the public FAQ. It is <b>not</b> a model for the <b>Windows 365 for Agents (A365-based)</b> SKU, which has a different licensing and cost structure. If you're sizing that, use the internal Copilot Credit Tools instead.</p>
         <p>Enter customers, adoption and the number of CUA agents each customer runs. Pricing is <b>per Cloud PC (VM)</b> — each CUA agent runs on one Cloud PC. Two types: <b>On-demand</b> (PAYG hours only) and <b>Always-available</b> (fixed price/Cloud PC/month + PAYG hours). Prices follow the official FAQ per geography.</p>
       </div>
       <div class="toolbar">
@@ -241,7 +241,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       </div>
 
       <div class="card" style="margin-bottom:20px">
-        <h2>Revenue breakdown <span style="font-weight:400;font-size:.8rem;color:var(--cp-text-muted)">(monthly &amp; annual run-rate at full adoption)</span></h2>
+        <h2>Cost breakdown <span style="font-weight:400;font-size:.8rem;color:var(--cp-text-muted)">(monthly &amp; annual run-rate at full adoption)</span></h2>
         <table id="breakdown">
           <thead><tr><th>Component</th><th>Volume</th><th>Per month</th><th>Per year</th></tr></thead>
           <tbody id="bdBody"></tbody>
@@ -250,7 +250,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       </div>
 
       <div class="card">
-        <h2>Year 1 — monthly revenue with adoption ramp</h2>
+        <h2>Year 1 — monthly cost with adoption ramp</h2>
         <div class="chartbox">
           <div class="bars" id="bars"></div>
           <div class="axis"><span>M1</span><span>M6</span><span>M12</span></div>
@@ -435,15 +435,15 @@ document.getElementById("themeToggle").addEventListener("click",()=>{
 document.getElementById("copyBtn").addEventListener("click",()=>{
   const r=compute(state);
   const txt =
-`Computer Use Agent (CUA) on Cloud PC — regional revenue estimate (${state.region})
+`Computer Use Agent (CUA) on Cloud PC — regional cost estimate (${state.region})
 Price (FAQ): $${state.hourly}/Cloud PC/hr · $${state.aaMonthly}/Cloud PC/month (always-available)
 Assumptions: ${fmtInt(state.customers)} customers · ${state.custAdopt}% adopting (${fmtInt(r.activeCust)} active) · ${fmtInt(state.agentsPer)} CUA agents/customer · ${state.aaPct}% always-available · ${state.hours}h/day × ${state.days} days × ${state.util}% util
 Cloud PCs: ${fmtInt(r.agents)} (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand)
 Cloud PC-hours/month: ${fmtInt(r.cpHoursMonth)}
 Hourly consumption/year: ${fmtFull(r.hourlyRevMonth*12)}
 Always-available fixed fee/year: ${fmtFull(r.aaFixedMonth*12)}
-Agent revenue/year (run-rate): ${fmtFull(r.agentRevYear)}
-Total revenue/year (run-rate): ${fmtFull(r.totalYear)}
+Agent cost/year (run-rate): ${fmtFull(r.agentRevYear)}
+Total cost/year (run-rate): ${fmtFull(r.totalYear)}
 Year 1 with ramp: ${fmtFull(r.y1Net)}
 Per customer/year: ${fmtFull(r.totalYear/Math.max(1,state.customers))}`;
   navigator.clipboard.writeText(txt).then(()=>{
