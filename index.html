@@ -68,7 +68,7 @@ body {
 .wrap { max-width: 1240px; margin: 0 auto; padding: 28px 20px 60px; }
 header.app { margin-bottom: 22px; }
 header.app h1 { font-size: 1.55rem; margin: 0 0 4px; }
-header.app p { margin: 0; color: var(--cp-text-muted); font-size: 0.92rem; max-width: 860px; }
+header.app p { margin: 0 0 6px; color: var(--cp-text-muted); font-size: 0.92rem; max-width: 860px; }
 .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
 .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 button.btn {
@@ -144,8 +144,8 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
     <div class="topbar">
       <div>
         <h1>Computer Use Agent (CUA) — Cost Estimator <span class="pill" id="pricePill">EU/UK · $0.52/hr</span></h1>
-        <p><b>Scope:</b> estimates <b>consumption cost for Computer Use Agents (CUA)</b> running on Cloud PCs — i.e. the Copilot Studio / CUA scenario using Cloud PC hourly pricing per the public FAQ. It is <b>not</b> a model for the <b>Windows 365 for Agents (A365-based)</b> SKU, which has a different licensing and cost structure. If you're sizing that, use the internal Copilot Credit Tools instead.</p>
-        <p>Enter customers, adoption and the number of CUA agents each customer runs. Pricing is <b>per Cloud PC (VM)</b> — each CUA agent runs on one Cloud PC. Two types: <b>On-demand</b> (PAYG hours only) and <b>Always-available</b> (fixed price/Cloud PC/month + PAYG hours). Prices follow the official FAQ per geography.</p>
+        <p><b>What this estimates:</b> the <b>Cloud PC consumption cost</b> for running <b>Computer Use Agents (CUAs)</b> — for example, agents built with Copilot Studio that use a Cloud PC as their execution environment. Each CUA runs on one Cloud PC, priced per the public Windows 365 Cloud PC hourly pricing FAQ.</p>
+        <p>Enter the number of CUAs you plan to run, choose the mix of <b>On-demand</b> (pay-as-you-go hours only) and <b>Always-available</b> (fixed monthly fee per Cloud PC + hours), and dial in the expected usage. Prices follow the official FAQ per geography.</p>
       </div>
       <div class="toolbar">
         <button class="btn" id="themeToggle" title="Light/dark">◐</button>
@@ -173,32 +173,23 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
         <div class="row"><input type="range" id="rAaMonthly" min="0" max="20" step="0.25" value="6.5"><input type="number" id="nAaMonthly" value="6.5" step="0.25"></div>
       </div>
 
-      <h3>Market &amp; customers</h3>
+      <h3>Your CUA fleet</h3>
       <div class="field">
-        <label>Customers in region <span class="val" id="vCustomers">4,000</span></label>
-        <div class="row"><input type="range" id="rCustomers" min="10" max="20000" step="10" value="4000"><input type="number" id="nCustomers" value="4000"></div>
-      </div>
-      <div class="field">
-        <label>CUA agents per customer <span class="val" id="vAgentsPer">10</span></label>
-        <div class="row"><input type="range" id="rAgentsPer" min="1" max="2000" step="1" value="10"><input type="number" id="nAgentsPer" value="10"></div>
-        <div class="hint">Number of Computer-Using Agents (each = one Cloud PC) an adopting customer runs.</div>
-      </div>
-      <div class="field">
-        <label>Customers adopting CUA <span class="val" id="vCustAdopt">5%</span></label>
-        <div class="row"><input type="range" id="rCustAdopt" min="1" max="100" step="1" value="5"><input type="number" id="nCustAdopt" value="5"></div>
-        <div class="hint">Share of regional customers that actually deploy Computer Use Agents on Cloud PCs. Scales the active base.</div>
+        <label>Number of CUAs <span class="val" id="vAgents">10</span></label>
+        <div class="row"><input type="range" id="rAgents" min="1" max="5000" step="1" value="10"><input type="number" id="nAgents" value="10"></div>
+        <div class="hint">Each CUA runs on one Cloud PC. Total Cloud PCs = this number.</div>
       </div>
 
       <h3>Fleet mix</h3>
       <div class="field">
         <label>Share Always-available <span class="val" id="vAaPct">25%</span></label>
         <div class="row"><input type="range" id="rAaPct" min="0" max="100" step="5" value="25"><input type="number" id="nAaPct" value="25"></div>
-        <div class="hint">Remainder is On-demand (PAYG only). Always-available also incurs hourly usage + the fixed monthly fee.</div>
+        <div class="hint">Remainder is On-demand (PAYG only). Always-available also incurs hourly usage on top of the fixed monthly fee.</div>
       </div>
 
-      <h3>Usage per agent</h3>
+      <h3>Usage per CUA</h3>
       <div class="field">
-        <label>Active hours per agent per workday <span class="val" id="vHours">24</span></label>
+        <label>Available hours per CUA per workday <span class="val" id="vHours">24</span></label>
         <div class="row"><input type="range" id="rHours" min="0.5" max="24" step="0.5" value="24"><input type="number" id="nHours" value="24" step="0.5"></div>
       </div>
       <div class="field">
@@ -208,14 +199,14 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       <div class="field">
         <label>Utilization <span class="val" id="vUtil">15%</span></label>
         <div class="row"><input type="range" id="rUtil" min="5" max="100" step="5" value="15"><input type="number" id="nUtil" value="15"></div>
-        <div class="hint">Share of scheduled hours an agent actually runs.</div>
+        <div class="hint">Share of available hours the CUA actually runs and consumes Cloud PC time.</div>
       </div>
 
-      <h3>Adoption</h3>
+      <h3>Rollout ramp</h3>
       <div class="field">
-        <label>Adoption at end of year 1 <span class="val" id="vAdopt">100%</span></label>
+        <label>Rollout at end of year 1 <span class="val" id="vAdopt">100%</span></label>
         <div class="row"><input type="range" id="rAdopt" min="5" max="100" step="5" value="100"><input type="number" id="nAdopt" value="100"></div>
-        <div class="hint">Linear ramp from 0 → this % over 12 months (year-1 figure).</div>
+        <div class="hint">Linear ramp from 0 → this % of the fleet online over 12 months. Set to 100% if all CUAs are live from month 1.</div>
       </div>
 
       <h3>Currency reference</h3>
@@ -235,13 +226,13 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
     <!-- OUTPUTS -->
     <div>
       <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-        <div class="kpi"><div class="lbl">Total agents / Cloud PCs</div><div class="num" id="kAgents">—</div><div class="sub" id="kAgentsSub"></div></div>
-        <div class="kpi hero"><div class="lbl">Total rev Year 1 (with ramp)</div><div class="num" id="kY1">—</div><div class="sub" id="kY1sub">billed in year 1</div></div>
-        <div class="kpi"><div class="lbl">Agent Cloud PC-hours / month</div><div class="num" id="kHours">—</div><div class="sub">at full adoption</div></div>
+        <div class="kpi"><div class="lbl">Total CUAs / Cloud PCs</div><div class="num" id="kAgents">—</div><div class="sub" id="kAgentsSub"></div></div>
+        <div class="kpi hero"><div class="lbl">Year 1 spend (with ramp)</div><div class="num" id="kY1">—</div><div class="sub" id="kY1sub">total across year 1</div></div>
+        <div class="kpi"><div class="lbl">Cloud PC-hours / month</div><div class="num" id="kHours">—</div><div class="sub">at full rollout</div></div>
       </div>
 
       <div class="card" style="margin-bottom:20px">
-        <h2>Cost breakdown <span style="font-weight:400;font-size:.8rem;color:var(--cp-text-muted)">(monthly &amp; annual run-rate at full adoption)</span></h2>
+        <h2>Cost breakdown <span style="font-weight:400;font-size:.8rem;color:var(--cp-text-muted)">(monthly &amp; annual run-rate at full rollout)</span></h2>
         <table id="breakdown">
           <thead><tr><th>Component</th><th>Volume</th><th>Per month</th><th>Per year</th></tr></thead>
           <tbody id="bdBody"></tbody>
@@ -250,14 +241,13 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       </div>
 
       <div class="card">
-        <h2>Year 1 — monthly cost with adoption ramp</h2>
+        <h2>Year 1 — monthly cost with rollout ramp</h2>
         <div class="chartbox">
           <div class="bars" id="bars"></div>
           <div class="axis"><span>M1</span><span>M6</span><span>M12</span></div>
         </div>
-        <div class="kpis" style="margin-top:22px;margin-bottom:0;grid-template-columns:repeat(3,1fr)">
-          <div class="kpi"><div class="lbl">Yearly run-rate after year 1</div><div class="num" id="kExit">—</div><div class="sub">month 12 × 12</div></div>
-          <div class="kpi"><div class="lbl">Per customer / year</div><div class="num" id="kPerCust">—</div><div class="sub">per active customer</div></div>
+        <div class="kpis" style="margin-top:22px;margin-bottom:0;grid-template-columns:repeat(2,1fr)">
+          <div class="kpi"><div class="lbl">Annual run-rate after year 1</div><div class="num" id="kExit">—</div><div class="sub">month 12 × 12</div></div>
           <div class="kpi"><div class="lbl">Per Cloud PC / month</div><div class="num" id="kPerAgent">—</div><div class="sub">avg all-in</div></div>
         </div>
       </div>
@@ -288,10 +278,10 @@ const LOC = "en-US";
 
 const DEFAULTS = {
   region:"Europe / United Kingdom", hourly:0.52, aaMonthly:6.5,
-  customers:4000, agentsPer:10, custAdopt:5, aaPct:25, hours:24, days:22, util:15,
+  agents:10, aaPct:25, hours:24, days:22, util:15,
   adopt:100, fx:0.92
 };
-const ids = ["hourly","aaMonthly","customers","agentsPer","custAdopt","aaPct","hours","days","util","adopt"];
+const ids = ["hourly","aaMonthly","agents","aaPct","hours","days","util","adopt"];
 const state = {...DEFAULTS};
 
 function fmtInt(n){ return Math.round(n).toLocaleString(LOC); }
@@ -306,64 +296,50 @@ function fmtMoney(n){
 function fmtFull(n){ return "$"+Math.round(n).toLocaleString(LOC); }
 
 function compute(s){
-  const activeCust = s.customers * (s.custAdopt/100);
-  const agentsPerCust = s.agentsPer;
-  const agents = activeCust * agentsPerCust;
+  const agents = s.agents;
   const aaVMs = agents * (s.aaPct/100);
   const odVMs = agents - aaVMs;
   const hoursPerAgentMonth = s.hours * s.days * (s.util/100);
   const cpHoursMonth = agents * hoursPerAgentMonth;
 
-  const hourlyRevMonth = cpHoursMonth * s.hourly;
-  const aaFixedMonth   = aaVMs * s.aaMonthly;
-  const agentRevMonth  = hourlyRevMonth + aaFixedMonth;
-  const agentRevYear   = agentRevMonth * 12;
+  const hourlyCostMonth = cpHoursMonth * s.hourly;
+  const aaFixedMonth    = aaVMs * s.aaMonthly;
+  const totalMonth      = hourlyCostMonth + aaFixedMonth;
+  const totalYear       = totalMonth * 12;
 
-  const seats = 0;
-  const seatRevMonth = 0;
-  const seatRevYear  = 0;
-
-  const totalMonth = agentRevMonth;
-  const totalYear  = agentRevYear;
-
-  let y1Agent=0; const monthly=[];
+  const monthly=[];
   for (let m=1;m<=12;m++){
     const frac = (s.adopt/100)*(m/12);
-    monthly.push(agentRevMonth*frac);
-    y1Agent += agentRevMonth*frac;
+    monthly.push(totalMonth*frac);
   }
-  let y1 = monthly.reduce((a,b)=>a+b,0);
-  const y1Net = y1;
+  const y1 = monthly.reduce((a,b)=>a+b,0);
   const exit = monthly[11]*12;
 
-  return {activeCust,agentsPerCust,agents,aaVMs,odVMs,hoursPerAgentMonth,cpHoursMonth,
-    hourlyRevMonth,aaFixedMonth,agentRevMonth,agentRevYear,
-    seats,seatRevMonth,seatRevYear,totalMonth,totalYear,
-    monthly,y1,y1Net,exit};
+  return {agents,aaVMs,odVMs,hoursPerAgentMonth,cpHoursMonth,
+    hourlyCostMonth,aaFixedMonth,totalMonth,totalYear,
+    monthly,y1,exit};
 }
 
 function render(){
   document.getElementById("vHourly").textContent = state.hourly.toLocaleString(LOC,{minimumFractionDigits:2,maximumFractionDigits:3});
   document.getElementById("vAaMonthly").textContent = state.aaMonthly.toLocaleString(LOC,{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById("vCustomers").textContent = fmtInt(state.customers);
-  document.getElementById("vAgentsPer").textContent = fmtInt(state.agentsPer);
-  document.getElementById("vCustAdopt").textContent = state.custAdopt+"%";
+  document.getElementById("vAgents").textContent = fmtInt(state.agents);
   document.getElementById("vAaPct").textContent = state.aaPct+"%";
   document.getElementById("vHours").textContent = state.hours;
   document.getElementById("vDays").textContent = state.days;
   document.getElementById("vUtil").textContent = state.util+"%";
   document.getElementById("vAdopt").textContent = state.adopt+"%";
   document.getElementById("pricePill").textContent = REGION_SHORT[state.region]+" · $"+state.hourly.toLocaleString(LOC,{minimumFractionDigits:2,maximumFractionDigits:3})+"/hr";
-  document.getElementById("regionHint").textContent = "FAQ: $"+REGIONS[state.region].hr+"/VM/hr · $"+REGIONS[state.region].mo+"/VM/month (always-available).";
+  document.getElementById("regionHint").textContent = "FAQ: $"+REGIONS[state.region].hr+"/Cloud PC/hr · $"+REGIONS[state.region].mo+"/Cloud PC/month (always-available).";
 
   const r = compute(state);
 
   document.getElementById("kAgents").textContent = fmtInt(r.agents);
-  document.getElementById("kAgentsSub").textContent = fmtInt(r.activeCust)+" active customers · "+fmtInt(r.aaVMs)+" AA / "+fmtInt(r.odVMs)+" OD";
+  document.getElementById("kAgentsSub").textContent = fmtInt(r.aaVMs)+" always-available · "+fmtInt(r.odVMs)+" on-demand";
   document.getElementById("kHours").textContent = fmtInt(r.cpHoursMonth);
 
   let rows = [];
-  rows.push(["Hourly consumption (PAYG, all Cloud PCs)", fmtInt(r.cpHoursMonth)+" hrs/mo", fmtFull(r.hourlyRevMonth), fmtFull(r.hourlyRevMonth*12)]);
+  rows.push(["Hourly consumption (PAYG, all Cloud PCs)", fmtInt(r.cpHoursMonth)+" hrs/mo", fmtFull(r.hourlyCostMonth), fmtFull(r.hourlyCostMonth*12)]);
   if (state.aaPct>0)
     rows.push(["Always-available fixed fee", fmtInt(r.aaVMs)+" Cloud PCs", fmtFull(r.aaFixedMonth), fmtFull(r.aaFixedMonth*12)]);
   let body = rows.map(c=>`<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3]}</td></tr>`).join("");
@@ -372,7 +348,7 @@ function render(){
 
   const eur = "€"+Math.round(r.totalYear*state.fx).toLocaleString(LOC);
   document.getElementById("perCust").textContent =
-    `≈ ${eur} per year (FX ${state.fx}). ${fmtInt(r.activeCust)} of ${fmtInt(state.customers)} customers adopting (${state.custAdopt}%) · ${fmtInt(r.agents)} Cloud PCs (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand) · avg. ${fmtInt(r.hoursPerAgentMonth)} hrs/Cloud PC/month.`;
+    `≈ ${eur} per year (FX ${state.fx}). ${fmtInt(r.agents)} Cloud PCs (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand) · avg. ${fmtInt(r.hoursPerAgentMonth)} hrs/Cloud PC/month.`;
 
   const maxM = Math.max(...r.monthly,1);
   document.getElementById("bars").innerHTML = r.monthly.map((mv,i)=>{
@@ -380,10 +356,9 @@ function render(){
     return `<div class="bar" style="height:${h}px" title="M${i+1}: ${fmtFull(mv)}"></div>`;
   }).join("");
 
-  document.getElementById("kY1").textContent = fmtMoney(r.y1Net);
-  document.getElementById("kY1sub").textContent = "billed in year 1";
+  document.getElementById("kY1").textContent = fmtMoney(r.y1);
+  document.getElementById("kY1sub").textContent = "total across year 1";
   document.getElementById("kExit").textContent = fmtMoney(r.exit);
-  document.getElementById("kPerCust").textContent = fmtMoney(r.totalYear/Math.max(1,r.activeCust));
   document.getElementById("kPerAgent").textContent = fmtFull(r.agents>0 ? r.totalMonth/r.agents : 0);
 }
 
@@ -435,17 +410,16 @@ document.getElementById("themeToggle").addEventListener("click",()=>{
 document.getElementById("copyBtn").addEventListener("click",()=>{
   const r=compute(state);
   const txt =
-`Computer Use Agent (CUA) on Cloud PC — regional cost estimate (${state.region})
+`Computer Use Agent (CUA) on Cloud PC — cost estimate (${state.region})
 Price (FAQ): $${state.hourly}/Cloud PC/hr · $${state.aaMonthly}/Cloud PC/month (always-available)
-Assumptions: ${fmtInt(state.customers)} customers · ${state.custAdopt}% adopting (${fmtInt(r.activeCust)} active) · ${fmtInt(state.agentsPer)} CUA agents/customer · ${state.aaPct}% always-available · ${state.hours}h/day × ${state.days} days × ${state.util}% util
-Cloud PCs: ${fmtInt(r.agents)} (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand)
+Fleet: ${fmtInt(r.agents)} CUAs (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand)
+Usage: ${state.hours}h/day × ${state.days} workdays × ${state.util}% utilization
 Cloud PC-hours/month: ${fmtInt(r.cpHoursMonth)}
-Hourly consumption/year: ${fmtFull(r.hourlyRevMonth*12)}
+Hourly consumption/year: ${fmtFull(r.hourlyCostMonth*12)}
 Always-available fixed fee/year: ${fmtFull(r.aaFixedMonth*12)}
-Agent cost/year (run-rate): ${fmtFull(r.agentRevYear)}
 Total cost/year (run-rate): ${fmtFull(r.totalYear)}
-Year 1 with ramp: ${fmtFull(r.y1Net)}
-Per customer/year: ${fmtFull(r.totalYear/Math.max(1,state.customers))}`;
+Year 1 with rollout ramp: ${fmtFull(r.y1)}
+Per Cloud PC / month (avg all-in): ${fmtFull(r.agents>0 ? r.totalMonth/r.agents : 0)}`;
   navigator.clipboard.writeText(txt).then(()=>{
     const b=document.getElementById("copyBtn"); const o=b.textContent; b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1500);
   });
