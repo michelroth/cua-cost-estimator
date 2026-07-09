@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Computer Use Agent (CUA) — Cost Estimator</title>
+<title>Windows 365 for Agents — Cost Estimator</title>
 <script>
   (() => {
     const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
@@ -143,10 +143,10 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
   <header class="app">
     <div class="topbar">
       <div>
-        <h1>Computer Use Agent (CUA) — Cost Estimator <span class="pill" id="pricePill">EU/UK · $0.52/hr</span></h1>
-        <p><b>What this estimates:</b> the <b>Cloud PC consumption cost</b> for running <b>Computer Use Agents (CUAs)</b> — for example, agents built with Copilot Studio that use a Cloud PC as their execution environment. Each CUA runs on one Cloud PC, priced per the public Windows 365 Cloud PC hourly pricing FAQ.</p>
-        <p>Enter the number of CUAs you plan to run, choose the mix of <b>On-demand</b> (pay-as-you-go hours only) and <b>Always-available</b> (fixed monthly fee per Cloud PC + hours), and dial in the expected usage. Prices follow the official FAQ per geography.</p>
-        <p style="font-size:0.88rem"><a href="https://www.microsoft.com/en-us/windows-365/enterprise/all-pricing" target="_blank" rel="noopener" style="color:var(--cp-link);font-weight:600">→ Windows 365 pricing overview (microsoft.com)</a></p>
+        <h1>Windows 365 for Agents — Cost Estimator <span class="pill" id="pricePill">EU/UK · $0.52/hr</span></h1>
+        <p><b>What this estimates:</b> the <b>Cloud PC consumption cost</b> for running agents on <b>Windows 365 for Agents</b> — the secured, pay-as-you-go Cloud PC environment for AI agents (e.g. Computer Use Agents built with Copilot Studio, Agent 365, or third‑party / custom agents). Each agent runs on one Cloud PC, priced per the official Microsoft geography table.</p>
+        <p>Enter the number of agents you plan to run, choose the mix of <b>On-demand</b> (pay-as-you-go hours only) and <b>Always-available</b> (fixed monthly fee per Cloud PC + hours), and dial in the expected usage. Prices follow the official Windows 365 for Agents pricing per geography.</p>
+        <p style="font-size:0.88rem"><a href="https://www.microsoft.com/en-us/windows-365/agents" target="_blank" rel="noopener" style="color:var(--cp-link);font-weight:600">→ Windows 365 for Agents — official page &amp; pricing FAQ (microsoft.com)</a></p>
       </div>
       <div class="toolbar">
         <button class="btn" id="themeToggle" title="Light/dark">◐</button>
@@ -174,11 +174,11 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
         <div class="row"><input type="range" id="rAaMonthly" min="0" max="20" step="0.25" value="6.5"><input type="number" id="nAaMonthly" value="6.5" step="0.25"></div>
       </div>
 
-      <h3>Your CUA fleet</h3>
+      <h3>Your agent fleet</h3>
       <div class="field">
-        <label>Number of CUAs <span class="val" id="vAgents">10</span></label>
+        <label>Number of agents <span class="val" id="vAgents">10</span></label>
         <div class="row"><input type="range" id="rAgents" min="1" max="5000" step="1" value="10"><input type="number" id="nAgents" value="10"></div>
-        <div class="hint">Each CUA runs on one Cloud PC. Total Cloud PCs = this number.</div>
+        <div class="hint">Each agent runs on one Cloud PC. Total Cloud PCs = this number.</div>
       </div>
 
       <h3>Fleet mix</h3>
@@ -188,9 +188,9 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
         <div class="hint">Remainder is On-demand (PAYG only). Always-available also incurs hourly usage on top of the fixed monthly fee.</div>
       </div>
 
-      <h3>Usage per CUA</h3>
+      <h3>Usage per agent</h3>
       <div class="field">
-        <label>Available hours per CUA per workday <span class="val" id="vHours">24</span></label>
+        <label>Available hours per agent per workday <span class="val" id="vHours">24</span></label>
         <div class="row"><input type="range" id="rHours" min="0.5" max="24" step="0.5" value="24"><input type="number" id="nHours" value="24" step="0.5"></div>
       </div>
       <div class="field">
@@ -200,7 +200,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       <div class="field">
         <label>Utilization <span class="val" id="vUtil">15%</span></label>
         <div class="row"><input type="range" id="rUtil" min="5" max="100" step="5" value="15"><input type="number" id="nUtil" value="15"></div>
-        <div class="hint">Share of available hours the CUA actually runs and consumes Cloud PC time.</div>
+        <div class="hint">Share of available hours the agent actually runs and consumes Cloud PC time.</div>
       </div>
 
       <h3>Rollout ramp</h3>
@@ -231,7 +231,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
     <!-- OUTPUTS -->
     <div>
       <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-        <div class="kpi"><div class="lbl">Total CUAs / Cloud PCs</div><div class="num" id="kAgents">—</div><div class="sub" id="kAgentsSub"></div></div>
+        <div class="kpi"><div class="lbl">Total agents / Cloud PCs</div><div class="num" id="kAgents">—</div><div class="sub" id="kAgentsSub"></div></div>
         <div class="kpi hero"><div class="lbl" id="kY1lbl">Year 1 spend (with ramp)</div><div class="num" id="kY1">—</div><div class="sub" id="kY1sub">total across year 1</div></div>
         <div class="kpi"><div class="lbl">Cloud PC-hours / month</div><div class="num" id="kHours">—</div><div class="sub">at full rollout</div></div>
       </div>
@@ -260,7 +260,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
   </div>
 
   <footer style="margin-top:36px;padding:18px 20px;border-top:1px solid var(--cp-border);color:var(--cp-text-muted);font-size:0.8rem;line-height:1.55">
-    <strong style="color:var(--cp-text)">Disclaimer:</strong> This tool provides a rough <em>estimate only</em> and is <em>not an official Microsoft quote, offer, or commercial commitment</em>. Prices, regional geographies, and hourly/always-available fees are subject to change; always consult the <a href="https://www.microsoft.com/en-us/windows-365/enterprise/all-pricing" target="_blank" rel="noopener" style="color:var(--cp-link)">official Windows 365 pricing page</a> and confirm with your Microsoft account team before making purchasing decisions. Actual consumption depends on usage patterns, applicable taxes/discounts, MACC/agreement terms, and currency conversion rates. This calculator is provided <em>as-is</em>, without warranty of any kind. The author and Microsoft accept no liability for decisions taken based on these numbers.
+    <strong style="color:var(--cp-text)">Disclaimer:</strong> This tool provides a rough <em>estimate only</em> and is <em>not an official Microsoft quote, offer, or commercial commitment</em>. Prices, regional geographies, and hourly/always-available fees are subject to change; always consult the <a href="https://www.microsoft.com/en-us/windows-365/agents" target="_blank" rel="noopener" style="color:var(--cp-link)">official Windows 365 for Agents page &amp; pricing FAQ</a> and confirm with your Microsoft account team before making purchasing decisions. Actual consumption depends on usage patterns, applicable taxes/discounts, MACC/agreement terms, and currency conversion rates. This calculator is provided <em>as-is</em>, without warranty of any kind. The author and Microsoft accept no liability for decisions taken based on these numbers.
   </footer>
 </div>
 
@@ -428,9 +428,9 @@ document.getElementById("themeToggle").addEventListener("click",()=>{
 document.getElementById("copyBtn").addEventListener("click",()=>{
   const r=compute(state);
   const txt =
-`Computer Use Agent (CUA) on Cloud PC — cost estimate (${state.region})
+`Windows 365 for Agents — cost estimate (${state.region})
 Price (FAQ): $${state.hourly}/Cloud PC/hr · $${state.aaMonthly}/Cloud PC/month (always-available)
-Fleet: ${fmtInt(r.agents)} CUAs (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand)
+Fleet: ${fmtInt(r.agents)} agents (${fmtInt(r.aaVMs)} always-available, ${fmtInt(r.odVMs)} on-demand)
 Usage: ${state.hours}h/day × ${state.days} workdays × ${state.util}% utilization
 Cloud PC-hours/month: ${fmtInt(r.cpHoursMonth)}
 Hourly consumption/year: ${fmtFull(r.hourlyCostMonth*12)}
