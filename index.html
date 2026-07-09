@@ -146,6 +146,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
         <h1>Computer Use Agent (CUA) — Cost Estimator <span class="pill" id="pricePill">EU/UK · $0.52/hr</span></h1>
         <p><b>What this estimates:</b> the <b>Cloud PC consumption cost</b> for running <b>Computer Use Agents (CUAs)</b> — for example, agents built with Copilot Studio that use a Cloud PC as their execution environment. Each CUA runs on one Cloud PC, priced per the public Windows 365 Cloud PC hourly pricing FAQ.</p>
         <p>Enter the number of CUAs you plan to run, choose the mix of <b>On-demand</b> (pay-as-you-go hours only) and <b>Always-available</b> (fixed monthly fee per Cloud PC + hours), and dial in the expected usage. Prices follow the official FAQ per geography.</p>
+        <p style="font-size:0.88rem"><a href="https://aka.ms/w365frontlinehourlyfaq" target="_blank" rel="noopener" style="color:var(--cp-link);font-weight:600">→ Official Windows 365 Cloud PC hourly pricing FAQ</a></p>
       </div>
       <div class="toolbar">
         <button class="btn" id="themeToggle" title="Light/dark">◐</button>
@@ -203,10 +204,14 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       </div>
 
       <h3>Rollout ramp</h3>
-      <div class="field">
+      <div class="toggle-row">
+        <input type="checkbox" id="rampOn" checked>
+        <label for="rampOn">Apply 12-month rollout ramp</label>
+      </div>
+      <div class="field" id="rampField">
         <label>Rollout at end of year 1 <span class="val" id="vAdopt">100%</span></label>
         <div class="row"><input type="range" id="rAdopt" min="5" max="100" step="5" value="100"><input type="number" id="nAdopt" value="100"></div>
-        <div class="hint">Linear ramp from 0 → this % of the fleet online over 12 months. Set to 100% if all CUAs are live from month 1.</div>
+        <div class="hint">Linear ramp from 0 → this % of the fleet online over 12 months. Uncheck the box above to calculate a single month / flat run-rate without a ramp.</div>
       </div>
 
       <h3>Currency reference</h3>
@@ -227,7 +232,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
     <div>
       <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
         <div class="kpi"><div class="lbl">Total CUAs / Cloud PCs</div><div class="num" id="kAgents">—</div><div class="sub" id="kAgentsSub"></div></div>
-        <div class="kpi hero"><div class="lbl">Year 1 spend (with ramp)</div><div class="num" id="kY1">—</div><div class="sub" id="kY1sub">total across year 1</div></div>
+        <div class="kpi hero"><div class="lbl" id="kY1lbl">Year 1 spend (with ramp)</div><div class="num" id="kY1">—</div><div class="sub" id="kY1sub">total across year 1</div></div>
         <div class="kpi"><div class="lbl">Cloud PC-hours / month</div><div class="num" id="kHours">—</div><div class="sub">at full rollout</div></div>
       </div>
 
@@ -241,7 +246,7 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       </div>
 
       <div class="card">
-        <h2>Year 1 — monthly cost with rollout ramp</h2>
+        <h2 id="chartTitle">Year 1 — monthly cost with rollout ramp</h2>
         <div class="chartbox">
           <div class="bars" id="bars"></div>
           <div class="axis"><span>M1</span><span>M6</span><span>M12</span></div>
@@ -253,6 +258,10 @@ tr.total td { font-weight: 700; border-top: 2px solid var(--cp-border-strong); }
       </div>
     </div>
   </div>
+
+  <footer style="margin-top:36px;padding:18px 20px;border-top:1px solid var(--cp-border);color:var(--cp-text-muted);font-size:0.8rem;line-height:1.55">
+    <strong style="color:var(--cp-text)">Disclaimer:</strong> This tool provides a rough <em>estimate only</em> and is <em>not an official Microsoft quote, offer, or commercial commitment</em>. Prices, regional geographies, and hourly/always-available fees are subject to change; always consult the <a href="https://aka.ms/w365frontlinehourlyfaq" target="_blank" rel="noopener" style="color:var(--cp-link)">official Windows 365 Cloud PC hourly pricing FAQ</a> and confirm with your Microsoft account team before making purchasing decisions. Actual consumption depends on usage patterns, applicable taxes/discounts, MACC/agreement terms, and currency conversion rates. This calculator is provided <em>as-is</em>, without warranty of any kind. The author and Microsoft accept no liability for decisions taken based on these numbers.
+  </footer>
 </div>
 
 <script>
@@ -279,7 +288,7 @@ const LOC = "en-US";
 const DEFAULTS = {
   region:"Europe / United Kingdom", hourly:0.52, aaMonthly:6.5,
   agents:10, aaPct:25, hours:24, days:22, util:15,
-  adopt:100, fx:0.92
+  adopt:100, rampOn:true, fx:0.92
 };
 const ids = ["hourly","aaMonthly","agents","aaPct","hours","days","util","adopt"];
 const state = {...DEFAULTS};
@@ -309,7 +318,7 @@ function compute(s){
 
   const monthly=[];
   for (let m=1;m<=12;m++){
-    const frac = (s.adopt/100)*(m/12);
+    const frac = s.rampOn ? (s.adopt/100)*(m/12) : 1;
     monthly.push(totalMonth*frac);
   }
   const y1 = monthly.reduce((a,b)=>a+b,0);
@@ -329,6 +338,11 @@ function render(){
   document.getElementById("vDays").textContent = state.days;
   document.getElementById("vUtil").textContent = state.util+"%";
   document.getElementById("vAdopt").textContent = state.adopt+"%";
+  const rampField = document.getElementById("rampField");
+  rampField.style.opacity = state.rampOn ? "1" : "0.4";
+  rampField.style.pointerEvents = state.rampOn ? "auto" : "none";
+  document.getElementById("rAdopt").disabled = !state.rampOn;
+  document.getElementById("nAdopt").disabled = !state.rampOn;
   document.getElementById("pricePill").textContent = REGION_SHORT[state.region]+" · $"+state.hourly.toLocaleString(LOC,{minimumFractionDigits:2,maximumFractionDigits:3})+"/hr";
   document.getElementById("regionHint").textContent = "FAQ: $"+REGIONS[state.region].hr+"/Cloud PC/hr · $"+REGIONS[state.region].mo+"/Cloud PC/month (always-available).";
 
@@ -357,7 +371,9 @@ function render(){
   }).join("");
 
   document.getElementById("kY1").textContent = fmtMoney(r.y1);
-  document.getElementById("kY1sub").textContent = "total across year 1";
+  document.getElementById("kY1lbl").textContent = state.rampOn ? "Year 1 spend (with ramp)" : "Year 1 spend (flat run-rate)";
+  document.getElementById("kY1sub").textContent = state.rampOn ? "total across year 1" : "12 × monthly run-rate";
+  document.getElementById("chartTitle").textContent = state.rampOn ? "Year 1 — monthly cost with rollout ramp" : "Year 1 — flat monthly cost (no ramp)";
   document.getElementById("kExit").textContent = fmtMoney(r.exit);
   document.getElementById("kPerAgent").textContent = fmtFull(r.agents>0 ? r.totalMonth/r.agents : 0);
 }
@@ -384,6 +400,7 @@ ids.forEach(key=>{
 });
 
 document.getElementById("fx").addEventListener("input",e=>{const v=parseFloat(e.target.value); if(!isNaN(v)){state.fx=v;render();}});
+document.getElementById("rampOn").addEventListener("change",e=>{ state.rampOn = e.target.checked; render(); });
 
 function setVals(obj){
   Object.entries(obj).forEach(([k,v])=>{
@@ -399,6 +416,7 @@ document.getElementById("resetBtn").addEventListener("click",()=>{
   regionSel.value=DEFAULTS.region;
   ids.forEach(k=>{ const r=document.getElementById("r"+cap(k)); const n=document.getElementById("n"+cap(k)); r.value=state[k]; n.value=state[k]; });
   document.getElementById("fx").value=DEFAULTS.fx;
+  document.getElementById("rampOn").checked=DEFAULTS.rampOn;
   render();
 });
 
@@ -418,7 +436,7 @@ Cloud PC-hours/month: ${fmtInt(r.cpHoursMonth)}
 Hourly consumption/year: ${fmtFull(r.hourlyCostMonth*12)}
 Always-available fixed fee/year: ${fmtFull(r.aaFixedMonth*12)}
 Total cost/year (run-rate): ${fmtFull(r.totalYear)}
-Year 1 with rollout ramp: ${fmtFull(r.y1)}
+Year 1 with rollout ramp: ${fmtFull(r.y1)}${state.rampOn?"":" (no ramp — flat run-rate)"}
 Per Cloud PC / month (avg all-in): ${fmtFull(r.agents>0 ? r.totalMonth/r.agents : 0)}`;
   navigator.clipboard.writeText(txt).then(()=>{
     const b=document.getElementById("copyBtn"); const o=b.textContent; b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1500);
